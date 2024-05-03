@@ -25,8 +25,11 @@
 
 from typing import Dict, Set, Optional
 
-cell_dict: Dict[str, 'Cell'] = {}
+# TODO: add tests
+# TODO: add caching
 
+
+cell_dict: Dict[str, 'Cell'] = {}
 
 class Cell:
     def __init__(self, value=None, child1=None, child2=None):
