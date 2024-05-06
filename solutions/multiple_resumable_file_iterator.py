@@ -4,11 +4,13 @@
 #
 # openai coding question
 #
-# 实现一个MultipleResumableFileIterator with existing ResumableFileIterator to iterator multiple json file.
+# implementMultipleResumableFileIterator with existing ResumableFileIterator
+#   to iterator multiple json file.
 # Be able to handle empty file case
 #
 ################################################
 import json
+
 
 class ResumableFileIterator:
     def __init__(self, filename):
@@ -21,7 +23,7 @@ class ResumableFileIterator:
             try:
                 data = json.load(file)
             except json.JSONDecodeError:
-                data = []  # Handle empty file case
+                data = []  # Handle empty file case or mal-formatted file
         return data
 
     def __iter__(self):
@@ -75,6 +77,10 @@ class MultipleResumableFileIterator:
         file_index, iterator_state = state
         if 0 <= file_index < len(self.filenames):
             self.current_file_index = file_index + 1
+            try:
+                self.current_iterator.setState(iterator_state)
+            except ValueError:
+                return ValueError("Invalid state value")
             self.current_iterator = ResumableFileIterator(self.filenames[file_index])
             self.current_iterator.setState(iterator_state)
         else:
@@ -82,8 +88,8 @@ class MultipleResumableFileIterator:
 
 
 # Example usage:
-filenames = ["file1.json", "file2.json", "empty_file.json", "file3.json"]
-multi_iterator = MultipleResumableFileIterator(filenames)
+file_names = ["file1.json", "file2.json", "empty_file.json", "file3.json"]
+multi_iterator = MultipleResumableFileIterator(file_names)
 
 for item in multi_iterator:
     print(item)

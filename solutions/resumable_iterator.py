@@ -4,13 +4,20 @@
 #
 # openai coding question
 #
-# implement a resumable iterator with getState()/setState() for list, you can use it in a for loop.
+# implement a resumable iterator with getState()/setState() for list, can use it in a for loop.
 #
+# Following-up questions:
+# 1. write down complete test cases
+# 2. handle stopIteration exception
+# 3. handle invalid state value
 ################################################
 
+import bisect
+from typing import List
 
-class ResumableIterator:
-    def __init__(self, data):
+
+class ResumableIterator(object):
+    def __init__(self, data: List[int]):
         self.data = data
         self.index = 0
 
@@ -18,8 +25,9 @@ class ResumableIterator:
         return self
 
     def __next__(self):
+        # https://stackoverflow.com/questions/16465313/how-yield-catches-stopiteration-exception
         if self.index >= len(self.data):
-            raise StopIteration
+            raise StopIteration("End of list Exception")
         item = self.data[self.index]
         self.index += 1
         return item
@@ -34,22 +42,49 @@ class ResumableIterator:
             raise ValueError("Invalid state value")
 
 
-# Example usage:
-my_list = [1, 2, 3, 4, 5]
-my_iterator = ResumableIterator(my_list)
+it = ResumableIterator([])
 
 # Looping through the list using the iterator
-for item in my_iterator:
-    print(item)
+for i in it:
+    print(i)
+
+try:
+    it.setState(-1)  # Invalid state value
+except ValueError as e:
+    print("Error:", e)
+
+print("iterator state:", it.getState())
+
+# Example usage:
+my_list = [1, 2, 3, 4, 5]
+it = ResumableIterator(my_list)
+
+# Looping through the list using the iterator
+for i in it:
+    print(i)
+
+try:
+    it = it.__next__()  # Invalid state value
+except StopIteration as e:
+    print("Error:", e.value)
 
 # Getting and setting state
-state = my_iterator.getState()
-print("Current state:", state)
+print("Current state:", it.getState())
+
+try:
+    it.setState(10)  # Invalid state value
+except ValueError as e:
+    print("Error:", e)
+
+try:
+    it.setState(-1)  # Invalid state value
+except ValueError as e:
+    print("Error:", e)
 
 # Resetting state
-my_iterator.setState(2)  # Resumes from the third element (index 2)
-print("Resumed state:", my_iterator.getState())
+it.setState(2)  # Resumes from the third element (index 2)
+print("Resumed state:", it.getState())
 
 # Looping again from the resumed state
-for item in my_iterator:
-    print(item)
+for i in it:
+    print(i)
