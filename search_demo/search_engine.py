@@ -84,16 +84,26 @@ def search(query: str, index_data: Index, top_k: int = 10) -> List[SearchResult]
     doc_lengths = index_data.doc_lengths
     total_docs = index_data.total_docs
 
+    # Ensure all query tokens are present in the index
+    if not all(term in index for term in query_terms):
+        return []
+
     # Find candidate documents (docs containing at least one query term)
     scores: DefaultDict[int, float] = defaultdict(float)
-
     for term in query_terms:
-        if term not in index:
-            continue
         doc_freq = len(index[term])
         for doc_id, term_freq in index[term].items():
             tfidf = calculate_tfidf(term_freq, doc_lengths[doc_id], doc_freq, total_docs)
             scores[doc_id] += tfidf
+
+    # old partial match logic
+    # for term in query_terms:
+    #     if term not in index:
+    #         continue
+    #     doc_freq = len(index[term])
+    #     for doc_id, term_freq in index[term].items():
+    #         tfidf = calculate_tfidf(term_freq, doc_lengths[doc_id], doc_freq, total_docs)
+    #         scores[doc_id] += tfidf
 
     if not scores:
         return []
@@ -126,7 +136,7 @@ def main() -> None:
     index_data: Index = build_index(documents)
 
     # Test queries
-    queries: List[str] = ["open ai search", "search", "retrieval"]
+    queries: List[str] = ["open ai search", "search", "retrieval", "machine learning"]
 
     for query in queries:
         print(f"\nQuery: '{query}'")
